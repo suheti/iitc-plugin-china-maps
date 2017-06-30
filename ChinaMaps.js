@@ -1,29 +1,41 @@
 // ==UserScript==
-// @id china-maps@suheti
-// @name IITC Plugin: china maps
-// @category Misc
-// @version 0.0.1
-// @namespace 
-// @description Show portal position in Chinese map apps on IITC Mobil, giving correct positions on map even when "Fix Google Map offsets in China" plugin is enabled.
-// @downloadURL 
-// @updateURL   
-// @include http://www.ingress.com/intel*
-// @match http://www.ingress.com/intel*
-// @include https://www.ingress.com/intel*
-// @match https://www.ingress.com/intel*
-// @grant none
+// @id             iitc-plugin-china-maps
+// @name           IITC plugin: china maps
+// @category       Misc
+// @version        0.0.1
+// @namespace      https://github.com/jonatkins/ingress-intel-total-conversion
+// @updateURL      https://raw.githubusercontent.com/suheti/iitc-plugin-china-maps/master/ChinaMaps.js
+// @downloadURL    https://raw.githubusercontent.com/suheti/iitc-plugin-china-maps/master/ChinaMaps.js
+// @description    Show portal position in Chinese map apps on IITC Mobil, giving correct positions on map even when "Fix Google Map offsets in China" plugin is enabled.
+// @include        https://*.ingress.com/intel*
+// @include        http://*.ingress.com/intel*
+// @match          https://*.ingress.com/intel*
+// @match          http://*.ingress.com/intel*
+// @include        https://*.ingress.com/mission/*
+// @include        http://*.ingress.com/mission/*
+// @match          https://*.ingress.com/mission/*
+// @match          http://*.ingress.com/mission/*
+// @grant          none
 // ==/UserScript==
 
-// Wrapper function that will be stringified and injected
-// into the document. Because of this, normal closure rules
-// do not apply here.
+
 function wrapper(plugin_info) {
-  // Make sure that window.plugin exists. IITC defines it as a no-op function,
-  // and other plugins assume the same.
-  if (typeof window.plugin !== 'function') window.plugin = function() {};
+// ensure plugin framework is there, even if iitc is not yet loaded
+if(typeof window.plugin !== 'function') window.plugin = function() {};
+
+//PLUGIN AUTHORS: writing a plugin outside of the IITC build environment? if so, delete these lines!!
+//(leaving them in place might break the 'About IITC' page or break update checks)
+plugin_info.buildName = 'local';
+plugin_info.dateTimeVersion = '20170625.102106';
+plugin_info.pluginId = 'basemap-gaode';
+//END PLUGIN AUTHORS NOTE
+
+
+
+// PLUGIN START ////////////////////////////////////////////////////////
 
   // Use own namespace for plugin
-  window.plugin.chinaMaps = {};
+  window.plugin.chinaMaps = function() {};
 
   // The entry point for this plugin.
   function setup() {
@@ -47,46 +59,50 @@ function wrapper(plugin_info) {
     var p_lngE6 = portalDetails.lngE6 / 1E6;
 
     var selectedPortal = 'selected portal';
+    var baiduURI, gaodeURI;
 
-    var textBody = 
-    '<a href="androidamap://viewMap?sourceApplication=iitc-plugin-chinaMaps&amp;poiname='+p_name+'&amp;lat='+p_latE6+'&amp;lon='+p_lngE6+'&amp;dev=1">高德地图</a>' +
+    var tempString = 'nothing';
+    if(L.Browser.mobile){
+      baiduURI = 'baidumap://map/marker?location=' + p_latE6 + ',' + p_lngE6 + '&amp;title=' + p_name + '&amp;content='+selectedPortal+'&amp;src=iitc-plugin-chinaMaps&amp;coord_type=wgs84';
+    } else {
+      baiduURI = 'http://api.map.baidu.com/marker?location=' + p_latE6 + ',' + p_lngE6 + '&amp;title=' + encodeURIComponent(p_name) + '&amp;content='+encodeURIComponent(selectedPortal)+'&amp;src=iitc-plugin-chinaMaps&amp;coord_type=wgs84&amp;output=html';
+      alert(baiduURI);
+    }
+
+    var textBody = 'window.plugin.chinaMaps.gaodeMap('+p_name+','+p_latE6+','+p_lngE6+');' +tempString +
+    '<a onclick="window.plugin.chinaMaps.gaodeMap(\''+p_name+'\',\''+p_latE6+'\',\''+p_lngE6+'\');" id="gaode-map">高德地图</a>' +
     '<br><br>' +
-    '<a href="baidumap://map/marker?location=' + p_latE6 + ',' + p_lngE6 + '&amp;title=' + p_name + '&amp;content='+selectedPortal+'&amp;src=iitc-plugin-chinaMaps&amp;coord_type=wgs84">百度地图</a>';
+    '<a id="baidu-map" href=' + baiduURI + '>百度地图</a>';
 
-    alert(textBody);
+    dialog({
+    html: textBody,
+    id: 'plugin-china-maps',
+    dialogClass: 'ui-dialog-chinamaps',
+    title: 'China Maps'
+    });
   };
 
-  
+  window.plugin.chinaMaps.gaodeMap = function(p_name, p_latE6, p_lngE6) {
+    // var rec = "another" + p_name + " " + p_latE6 + " " + p_lngE6;
+    // alert("fuck");
+    // alert(rec);
+    //alert();
+    window.location = "http://www.google.com/";
+    //window.location = "androidamap://viewMap?sourceApplication=iitc-plugin-chinaMaps&poiname="+p_name+"&lat="+p_latE6+"&lon="+p_lngE6+"&dev=1";
+  };
 
-  // Add an info property for IITC's plugin system
-  setup.info = plugin_info;
-
-  // Make sure window.bootPlugins exists and is an array
-  if (!window.bootPlugins) window.bootPlugins = [];
-  // Add our startup hook
-  window.bootPlugins.push(setup);
-  // If IITC has already booted, immediately run the 'setup' function
-  if (window.iitcLoaded && typeof setup === 'function') setup();
-}
+// PLUGIN END //////////////////////////////////////////////////////////
 
 
-// Create a script element to hold our content script
+setup.info = plugin_info; //add the script info data to the function as a property
+if(!window.bootPlugins) window.bootPlugins = [];
+window.bootPlugins.push(setup);
+// if IITC has already booted, immediately run the 'setup' function
+if(window.iitcLoaded && typeof setup === 'function') setup();
+} // wrapper end
+// inject code into site context
 var script = document.createElement('script');
 var info = {};
-
-// GM_info is defined by the assorted monkey-themed browser extensions
-// and holds information parsed from the script header.
-if (typeof GM_info !== 'undefined' && GM_info && GM_info.script) {
-  info.script = {
-    version: GM_info.script.version,
-    name: GM_info.script.name,
-    description: GM_info.script.description
-  };
-}
-
-// Create a text node and our IIFE inside of it
-var textContent = document.createTextNode('(' + wrapper + ')(' + JSON.stringify(info) + ')');
-// Add some content to the script element
-script.appendChild(textContent);
-// Finally, inject it... wherever.
+if (typeof GM_info !== 'undefined' && GM_info && GM_info.script) info.script = { version: GM_info.script.version, name: GM_info.script.name, description: GM_info.script.description };
+script.appendChild(document.createTextNode('('+ wrapper +')('+JSON.stringify(info)+');'));
 (document.body || document.head || document.documentElement).appendChild(script);
