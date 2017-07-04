@@ -6,7 +6,7 @@
 // @namespace      https://github.com/jonatkins/ingress-intel-total-conversion
 // @updateURL      https://raw.githubusercontent.com/suheti/iitc-plugin-china-maps/master/ChinaMaps.user.js
 // @downloadURL    https://raw.githubusercontent.com/suheti/iitc-plugin-china-maps/master/ChinaMaps.user.js
-// @description    Export portal position in mainland China map vendors, giving correct positions on map with or without "Fix Google Map offsets in China" plugin enabled.
+// @description    Export portal position in mainland China map vendors, giving correct positions on map with or without "Fix Google Map offsets in China" plugin enabled. Currently works on android and desktop, not for ios.
 // @include        https://*.ingress.com/intel*
 // @include        http://*.ingress.com/intel*
 // @match          https://*.ingress.com/intel*
