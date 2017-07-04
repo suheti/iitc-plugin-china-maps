@@ -2,11 +2,11 @@
 // @id             iitc-plugin-china-maps
 // @name           IITC plugin: china maps
 // @category       Misc
-// @version        0.0.1
+// @version        0.0.2
 // @namespace      https://github.com/jonatkins/ingress-intel-total-conversion
-// @updateURL      https://raw.githubusercontent.com/suheti/iitc-plugin-china-maps/master/ChinaMaps.js
-// @downloadURL    https://raw.githubusercontent.com/suheti/iitc-plugin-china-maps/master/ChinaMaps.js
-// @description    Show portal position in Chinese map apps on IITC Mobil, giving correct positions on map even when "Fix Google Map offsets in China" plugin is enabled.
+// @updateURL      https://raw.githubusercontent.com/suheti/iitc-plugin-china-maps/master/ChinaMaps.user.js
+// @downloadURL    https://raw.githubusercontent.com/suheti/iitc-plugin-china-maps/master/ChinaMaps.user.js
+// @description    Export portal position in mainland China map vendors, giving correct positions on map with or without "Fix Google Map offsets in China" plugin enabled.
 // @include        https://*.ingress.com/intel*
 // @include        http://*.ingress.com/intel*
 // @match          https://*.ingress.com/intel*
@@ -63,14 +63,17 @@ plugin_info.pluginId = 'basemap-gaode';
 
     var tempString = 'nothing';
     if(L.Browser.mobile){
-      baiduURI = 'baidumap://map/marker?location=' + p_latE6 + ',' + p_lngE6 + '&amp;title=' + p_name + '&amp;content='+selectedPortal+'&amp;src=iitc-plugin-chinaMaps&amp;coord_type=wgs84';
+      //android uri
+      baiduURI = 'baidumap://map/marker?location=' + p_latE6 + ',' + p_lngE6 + '&amp;title=' + encodeURIComponent(p_name) + '&amp;content='+encodeURIComponent(selectedPortal)+'&amp;src=iitc-plugin-chinaMaps&amp;coord_type=wgs84';
+      gaodeURI = "androidamap://viewMap?sourceApplication=iitc-plugin-chinaMaps&amp;poiname=" + encodeURIComponent(p_name)+"&amp;lat="+p_latE6+"&amp;lon="+p_lngE6+"&amp;dev=1";
+
     } else {
       baiduURI = 'http://api.map.baidu.com/marker?location=' + p_latE6 + ',' + p_lngE6 + '&amp;title=' + encodeURIComponent(p_name) + '&amp;content='+encodeURIComponent(selectedPortal)+'&amp;src=iitc-plugin-chinaMaps&amp;coord_type=wgs84&amp;output=html';
-      alert(baiduURI);
+      gaodeURI = 'http://uri.amap.com/marker?position=' + p_lngE6 + ',' + p_latE6 + '&name='+encodeURIComponent(p_name)+'&src=iitc-plugin-chinaMaps&coordinate=wgs84&callnative=0';
     }
 
-    var textBody = 'window.plugin.chinaMaps.gaodeMap('+p_name+','+p_latE6+','+p_lngE6+');' +tempString +
-    '<a onclick="window.plugin.chinaMaps.gaodeMap(\''+p_name+'\',\''+p_latE6+'\',\''+p_lngE6+'\');" id="gaode-map">高德地图</a>' +
+    var textBody = 
+    '<a id="gaode-map" href=' + gaodeURI + '>高德地图</a>' +
     '<br><br>' +
     '<a id="baidu-map" href=' + baiduURI + '>百度地图</a>';
 
@@ -80,15 +83,6 @@ plugin_info.pluginId = 'basemap-gaode';
     dialogClass: 'ui-dialog-chinamaps',
     title: 'China Maps'
     });
-  };
-
-  window.plugin.chinaMaps.gaodeMap = function(p_name, p_latE6, p_lngE6) {
-    // var rec = "another" + p_name + " " + p_latE6 + " " + p_lngE6;
-    // alert("fuck");
-    // alert(rec);
-    //alert();
-    window.location = "http://www.google.com/";
-    //window.location = "androidamap://viewMap?sourceApplication=iitc-plugin-chinaMaps&poiname="+p_name+"&lat="+p_latE6+"&lon="+p_lngE6+"&dev=1";
   };
 
 // PLUGIN END //////////////////////////////////////////////////////////
